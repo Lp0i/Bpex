@@ -489,7 +489,7 @@ void APlayerCharacter::StartReload()
 	AItemBase* ammoItem = Bag->SearchInBag(EItemType::AMMO);
 	if (ammoItem == nullptr)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Out of Ammo!"));
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Out of Ammo!"));
 		return;
 	}
 
