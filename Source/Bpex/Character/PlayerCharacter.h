@@ -75,15 +75,13 @@ public:	//Properties
 		bool bTakeOutWeapon = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
-		float WalkSpeed = 320.f;
+		float WalkSpeed = 380.f;
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
-		float CrouchSpeed = 200.f;
+		float CrouchSpeed = 230.f;
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
-		float AimSpeed = 140.f;
+		float AimSpeed = 160.f;
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
-		float SprintSpeed = 720.f;
-	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
-		float SlideSpeed = 900.f;
+		float SprintSpeed = 760.f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
 		float StandJumpVelocity = 800.f;

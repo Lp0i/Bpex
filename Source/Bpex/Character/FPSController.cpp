@@ -67,6 +67,8 @@ void AFPSController::MoveForward(float val)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		ControlPlayer->Move(Direction, val);
 	}
+	if (val < 0 || val == 0)
+		ToggleSprint(false);
 }
 
 void AFPSController::MoveRight(float val)
@@ -82,6 +84,7 @@ void AFPSController::MoveRight(float val)
 		// get forward vector
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		ControlPlayer->Move(Direction, val);
+		//GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, Direction.ToString());
 	}
 }
 
@@ -92,8 +95,13 @@ void AFPSController::Jump()
 
 void AFPSController::ToggleSprint(bool bToggle)
 { 
-	if(MoveFwdVal > 0)
-		ControlPlayer->ToggleSprint(bToggle); 
+	if (bToggle)
+	{
+		if (MoveFwdVal > 0)
+			ControlPlayer->ToggleSprint(bToggle);
+	}
+	else
+		ControlPlayer->ToggleSprint(bToggle);
 }
 
 void AFPSController::ToggleCrouch(bool bToggle)

@@ -122,7 +122,7 @@ void UHUDWidget::CrosshairTick(float DeltaTime)
 {
 	if (player != nullptr)
 	{
-		float currentSpeed = player->GetVelocity().Size();
+		float currentSpeed = player->GetVelocity().Size2D();
 		float maxSpeed = player->SprintSpeed;
 		float hideSpeed = player->WalkSpeed;
 

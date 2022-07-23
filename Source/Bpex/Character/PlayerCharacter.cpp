@@ -38,7 +38,7 @@ APlayerCharacter::APlayerCharacter()
 	//设置初始移动数值
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = CrouchSpeed;
-	GetCharacterMovement()->MaxAcceleration = 800.f;
+	GetCharacterMovement()->MaxAcceleration = 1600.f;
 	GetCharacterMovement()->GravityScale = 2.f;
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;	//可蹲伏
 	GetCharacterMovement()->GetNavAgentPropertiesRef().bCanFly = true;  //可飞行、用于攀爬
@@ -109,6 +109,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 	/// CrouchTimeline Tick 
 	CrouchTimeline.TickTimeline(DeltaTime);
 
+	if (GetVelocity().Size() <= CrouchSpeed + 50.f)
+		ToggleSlide(false);
 
 	FHitResult VisibleTracedResult;
 	FVector StartPoint = FollowCamera->GetComponentLocation();
@@ -205,15 +207,11 @@ void APlayerCharacter::Jump()
 
 void APlayerCharacter::Move(FVector Direction, float Value)
 {
+	//GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Cyan, Direction.ToString());
 	if (!bIsSliding)
 	{
 		AddMovementInput(Direction, Value);
 		//GEngine->AddOnScreenDebugMessage(-1, 0.1, FColor::Cyan, FString::SanitizeFloat(Value));
-	}
-	else
-	{
-		if (GetVelocity().Size() <= CrouchSpeed)
-			ToggleSlide(false);
 	}
 }
 
@@ -224,8 +222,7 @@ void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 
 	if (PrevMovementMode == EMovementMode::MOVE_Falling)
 	{
-		auto curMode = GetCharacterMovement()->MovementMode;
-		if (curMode == EMovementMode::MOVE_Walking)
+		if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Walking)
 		{
 			if (bAttemptToCrouch)
 			{
@@ -301,7 +298,7 @@ void APlayerCharacter::ToggleCrouch(bool bToggle)
 			return;
 		}
 		bIsCrouching = true;
-		if (bIsSprinting && !(GetCharacterMovement()->IsFalling()))
+		if (bIsSprinting && !(GetCharacterMovement()->IsFalling()) && !bAttemptToCrouch)
 			ToggleSlide(true);
 
 		Crouch();
@@ -349,9 +346,13 @@ void APlayerCharacter::ToggleSlide(bool bToggle)
 	if (bToggle)
 	{
 		bIsSliding = true;
-		GetCharacterMovement()->MaxWalkSpeedCrouched = SlideSpeed;
+		//GetCharacterMovement()->MaxWalkSpeedCrouched = SlideSpeed;
 		GetCharacterMovement()->bUseSeparateBrakingFriction = true;
-		GetCharacterMovement()->AddImpulse(GetVelocity() * 0.75f, true);
+		FVector velocity = GetVelocity();
+		float impluseScale = 1.5f;
+		if (velocity.Size2D() <= WalkSpeed && bAttemptToCrouch)
+			impluseScale = 2.f;
+		GetCharacterMovement()->AddImpulse(FVector(velocity.X * impluseScale, velocity.Y * impluseScale, 0.f), true);
 	}
 	else
 	{
@@ -489,7 +490,8 @@ void APlayerCharacter::StartReload()
 	AItemBase* ammoItem = Bag->SearchInBag(EItemType::AMMO);
 	if (ammoItem == nullptr)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Out of Ammo!"));
+		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Out of Ammo!"));
+		UGameplayStatics::PlaySound2D(GetWorld(), Weapon->LowAmmoSound);
 		return;
 	}
 

@@ -95,6 +95,8 @@ public:
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Audio")
 		class USoundCue* FireSounds;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Audio")
+		class USoundCue* LowAmmoSound;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Mesh")
 		class USkeletalMeshComponent* WeaponMesh;

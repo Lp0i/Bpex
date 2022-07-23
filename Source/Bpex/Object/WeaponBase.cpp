@@ -93,7 +93,8 @@ void AWeaponBase::Fire()
 {
 	--WeaponInfo.Ammo;
 	//GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, FString::FromInt(WeaponInfo.Ammo));
-
+	if (WeaponInfo.Ammo <= WeaponInfo.ClipSize * 0.2f)
+		UGameplayStatics::PlaySound2D(GetWorld(), LowAmmoSound);
 
 	if (WeaponMesh != nullptr)
 	{
