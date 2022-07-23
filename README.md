@@ -14,6 +14,7 @@ UE4版本4.27
 + 补给品
 + 装备（Shield、Helmet、Backpack）
 + 投掷物
++ 攀爬系统
 
 #### 演示视频
 
