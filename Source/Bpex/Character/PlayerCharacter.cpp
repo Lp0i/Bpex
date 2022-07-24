@@ -605,12 +605,15 @@ void APlayerCharacter::UsingSupplement(AItemBase* Item, int32 Num)
 			return;
 	}
 
+	SwitchWeapon(0.f);
 	ToggleSupply(true);
 
 	float usingTime = Item->ItemInfo.NeedTime;
 	FTimerDelegate CompleteSupplyDel;
 	CompleteSupplyDel.BindUFunction(this, "SupplyFinished", Item, Num);
 	GetWorldTimerManager().SetTimer(UseSupplementTimer, CompleteSupplyDel, usingTime, false);
+	
+	HUDSupplyProgressDel.ExecuteIfBound(usingTime, Item->ItemInfo.Icon, Item->ItemInfo.ItemName);
 }
 
 void APlayerCharacter::SupplyFinished(AItemBase* Item, int32 Num)

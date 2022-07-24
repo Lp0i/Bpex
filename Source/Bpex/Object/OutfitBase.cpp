@@ -40,8 +40,7 @@ void AOutfitBase::PostInitializeComponents()
 		{
 			//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green, TEXT("Create Successful"));
 			DisplayInfo->bindNum(1);
-			const UEnum* outfittype = FindObject<UEnum>(ANY_PACKAGE, TEXT("EOutfitInfo"));
-			DisplayInfo->bindType(outfittype->GetEnumText((int32)OutfitInfo.OutfitType));
+			DisplayInfo->bindType(FText::FromString(OutfitInfo.OutfitName));
 			DisplayInfo->bindImg(OutfitInfo.OutfitImg);
 		}
 	}

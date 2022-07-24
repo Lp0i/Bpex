@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "HitableINT.generated.h"
 
+
 UENUM(BlueprintType)
 enum class EDamageType :uint8
 {

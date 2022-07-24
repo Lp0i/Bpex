@@ -41,8 +41,7 @@ void AItemBase::PostInitializeComponents()
 		{
 			//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green, TEXT("Create Successful"));
 			DisplayInfo->bindNum(ItemInfo.Num);
-			const UEnum* itemtype = FindObject<UEnum>(ANY_PACKAGE, TEXT("EItemType"));
-			DisplayInfo->bindType(itemtype->GetEnumText((int32)ItemInfo.ItemType));
+			DisplayInfo->bindType(FText::FromString(ItemInfo.ItemName));
 			DisplayInfo->bindImg(ItemInfo.Icon);
 		}
 	}
@@ -55,30 +54,35 @@ void AItemBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangeEven
 	switch (ItemInfo.ItemType)
 	{
 	case EItemType::AMMO:
+		ItemInfo.ItemName = "Ammo";
 		ItemInfo.MaxNum = 60;
 		ItemInfo.NeedTime = 0.f;
 		ItemInfo.Supply = 0.f;
 		break;
 
 	case EItemType::AIDS:
+		ItemInfo.ItemName = "Syringe";
 		ItemInfo.MaxNum = 4;
 		ItemInfo.NeedTime = 5.f;
 		ItemInfo.Supply = 0.25f;
 		break;
 
 	case EItemType::MEDKIT:
+		ItemInfo.ItemName = "MedKit";
 		ItemInfo.MaxNum = 2;
 		ItemInfo.NeedTime = 8.f;
 		ItemInfo.Supply = 1.f;
 		break;
 
 	case EItemType::CELL:
+		ItemInfo.ItemName = "ShieldCell";
 		ItemInfo.MaxNum = 4;
 		ItemInfo.NeedTime = 3.f;
 		ItemInfo.Supply = 0.25f;
 		break;
 
 	case EItemType::BATTERY:
+		ItemInfo.ItemName = "ShieldBattery";
 		ItemInfo.MaxNum = 2;
 		ItemInfo.NeedTime = 5.f;
 		ItemInfo.Supply = 1.25f;

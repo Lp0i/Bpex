@@ -5,6 +5,7 @@
 #include "Bpex/Object/ItemBase.h"
 #include "Bpex/Object/WeaponBase.h"
 #include "Components/TimelineComponent.h"
+#include "HUDSupplyProgress.h"
 #include "HUDWidget.generated.h"
 
 class UImage;
@@ -79,6 +80,9 @@ public:
 		UProgressBar* HealthBar;
 	UPROPERTY(meta = (BindWidget))
 		UTextBlock* EvoValue;
+
+	UPROPERTY(meta = (BindWidget))
+		UHUDSupplyProgress* SupplyProgressBar;
 
 	UPROPERTY(BlueprintReadWrite)
 		APlayerCharacter* player;

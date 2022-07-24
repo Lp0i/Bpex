@@ -27,6 +27,8 @@ struct BPEX_API FOutfitInfo
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere)
 		EOutfitType OutfitType;
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere)
+		FString OutfitName;
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere)
 		int32 Level = 1;
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere)
 		float AdditiveValue = 0.f;

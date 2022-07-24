@@ -27,6 +27,8 @@ class BPEX_API APlayerCharacter : public ACharacter
 	// HUD击中反馈
 	DECLARE_DELEGATE_OneParam(FHUDHitMarkDel, bool)
 
+	DECLARE_DELEGATE_ThreeParams(FHUDSupplyProgressDel, float, UTexture2D*, FString)
+
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
@@ -35,7 +37,8 @@ public:
 	FHUDAmmoNumDel HUDAmmoDel;
 	FHUDWeaponInfoDel HUDWeaponInfoDel;
 	FHUDHitMarkDel HUDHitMarkDel;
-	
+	FHUDSupplyProgressDel HUDSupplyProgressDel;
+
 	// JumpCharge Timer 控制连续跳跃间隔
 	FTimerHandle JumpChargeTimer;
 	// FireDelay Timer 控制开火速度

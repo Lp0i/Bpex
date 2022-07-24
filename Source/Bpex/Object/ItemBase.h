@@ -30,6 +30,8 @@ struct BPEX_API FItemInfo
 
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Type")
 		EItemType ItemType;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Type")
+		FString ItemName;
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Count")
 		int32 Num = 0;
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Count")

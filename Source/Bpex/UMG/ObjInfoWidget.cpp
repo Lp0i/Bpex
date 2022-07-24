@@ -23,7 +23,7 @@ void UObjInfoWidget::bindNum(int32 num)
 
 void UObjInfoWidget::bindImg(UTexture2D* img)
 {
-	ObjImg->SetBrushFromTexture(img, true);
+	ObjImg->SetBrushFromTexture(img, false);
 }
 
 void UObjInfoWidget::setBoxLoc(FVector2D NewLocation)

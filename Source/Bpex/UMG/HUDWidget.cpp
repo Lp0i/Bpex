@@ -54,6 +54,7 @@ void UHUDWidget::SetupWidget()
 	player->HUDWeaponInfoDel.AddUObject(this, &UHUDWidget::UpdateWeaponPanel);
 	player->HUDAmmoDel.BindUObject(this, &UHUDWidget::UpdateAmmoNums);
 	player->HUDHitMarkDel.BindUObject(this, &UHUDWidget::PopupHitMark);
+	player->HUDSupplyProgressDel.BindUObject(SupplyProgressBar, &UHUDSupplyProgress::SetupSupplyData);
 
 	//…Ë÷√HitMarkTimeLine
 	if (HitMarkCurve != nullptr)

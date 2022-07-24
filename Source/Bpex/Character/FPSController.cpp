@@ -67,7 +67,7 @@ void AFPSController::MoveForward(float val)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		ControlPlayer->Move(Direction, val);
 	}
-	if (val < 0)
+	if (val <= 0)
 		ToggleSprint(false);
 }
 
