@@ -109,9 +109,7 @@ public:
 	//使用物品
 	UFUNCTION(BlueprintCallable)
 		void UseItem();
-	UFUNCTION(BlueprintCallable)
-		void ItemEffect();
-
+	
 	//重叠、射线检测事件
 	UFUNCTION(BlueprintCallable)
 		void OnOverlapsBegin(UPrimitiveComponent* Comp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,

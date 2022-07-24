@@ -27,7 +27,6 @@ class BPEX_API APlayerCharacter : public ACharacter
 	// HUD击中反馈
 	DECLARE_DELEGATE_OneParam(FHUDHitMarkDel, bool)
 
-
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
@@ -36,7 +35,7 @@ public:
 	FHUDAmmoNumDel HUDAmmoDel;
 	FHUDWeaponInfoDel HUDWeaponInfoDel;
 	FHUDHitMarkDel HUDHitMarkDel;
-
+	
 	// JumpCharge Timer 控制连续跳跃间隔
 	FTimerHandle JumpChargeTimer;
 	// FireDelay Timer 控制开火速度
@@ -46,8 +45,10 @@ public:
 	// SwitchAnimDelay Timer 切换武器时间
 	FTimerHandle SwitchDelayTimer;
 	FTimerHandle SetADSTransTimer;
-	
+	// CustomCrouch Timer 蹲伏所需时间
 	FTimerHandle CrouchTimer;
+	// 使用物品时间
+	FTimerHandle UseSupplementTimer;
 
 public:	//Properties
 	UPROPERTY(BlueprintReadWrite, VisibleAnyWhere, Category = "Status")
@@ -207,6 +208,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerAction")
 		void ToggleADS(bool bToggle);
 	UFUNCTION(BlueprintCallable, Category = "PlayerAction")
+		void ToggleSupply(bool bToggle);
+	UFUNCTION(BlueprintCallable, Category = "PlayerAction")
 		void StartReload();
 	UFUNCTION(BlueprintCallable, Category = "PlayerAction")
 		void EndReload();
@@ -220,21 +223,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerAction")
 		void FireAmmoTrace();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "PlayerAction")
 		void AttainWeapon(AWeaponBase* weapon);
+	UFUNCTION(BlueprintCallable, Category = "PlayerAction")
+		void SwitchWeapon(int32 weaponIdx);
 	UFUNCTION()
 		void SetupWeaponWhenTakeout();
 	UFUNCTION()
 		void SetupWeaponWhenPackup();
-
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		AWeaponBase* GetUsingWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 		void InteractTracedObj();
-
 	UFUNCTION(BlueprintCallable, Category = "PlayerAction")
-		void SwitchWeapon(int32 weaponIdx);
+		void UsingSupplement(AItemBase* Item, int32 Num);
+	UFUNCTION()
+		void SupplyFinished(AItemBase* Item, int32 Num);
+	UFUNCTION(BlueprintCallable, Category = "PlayerAction")
+		void StopUsingSupplement();
 
 	UFUNCTION(BlueprintCallable)
 		void SetADSTransComp();

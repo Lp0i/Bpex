@@ -20,10 +20,8 @@ void UUIBagPanel::UpdateBagUI(TArray<AItemBase*>& BagList, int32 BagSize)
 
 		slot->SetSlotImg(img);
 		slot->SetSlotText(num);
+		slot->ItemRef = BagList[i - 1];
 		slot->SetRenderOpacity(1.f);
-
-		//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Cyan, slot->GetName());
-		//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Cyan, img->GetName());
 	}
 	for (; i <= BagSize; ++i)
 	{
@@ -33,8 +31,7 @@ void UUIBagPanel::UpdateBagUI(TArray<AItemBase*>& BagList, int32 BagSize)
 		auto findPro = CastFieldChecked<FObjectProperty>(GetClass()->FindPropertyByName(FName(memberName)));
 		auto slot = Cast<UUIBagSlot>(findPro->GetObjectPropertyValue_InContainer(this));
 
-		slot->SetSlotImg(nullptr);
-		slot->SetSlotText(0);
+		slot->ClearSlotData();
 		slot->SetRenderOpacity(1.f);
 	}
 	for (; i <= 16; ++i)
@@ -44,12 +41,8 @@ void UUIBagPanel::UpdateBagUI(TArray<AItemBase*>& BagList, int32 BagSize)
 
 		auto findPro = CastFieldChecked<FObjectProperty>(GetClass()->FindPropertyByName(FName(memberName)));
 		auto slot = Cast<UUIBagSlot>(findPro->GetObjectPropertyValue_InContainer(this));
+
+		slot->ClearSlotData();
 		slot->SetRenderOpacity(0.f);
 	}
-}
-
-void UUIBagPanel::PrintProperty()
-{
-	auto slot = Cast<FObjectProperty>(GetClass()->FindPropertyByName(TEXT("Slot_1")));
-	auto a = Cast<UUIBagSlot>(slot->GetObjectPropertyValue_InContainer(this));
 }

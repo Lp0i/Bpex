@@ -10,6 +10,7 @@
 #include "Bpex/Components/PlayerBagComp.h"
 #include "Bpex/Object/WeaponBase.h"
 #include "Bpex/Object/Projectile.h"
+#include "Bpex/Object/ItemBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -93,6 +94,8 @@ void APlayerCharacter::BeginPlay()
 		CrouchUpdateFunc.BindUFunction(this, TEXT("SetCrouchAlpha"));
 		CrouchTimeline.AddInterpFloat(CrouchCurve, CrouchUpdateFunc);
 	}
+
+	//GetCharacterMovement()->MaxWalkSpeed = WalkSpeed + 100.f;
 }
 
 // Called every frame
@@ -336,7 +339,7 @@ void APlayerCharacter::ToggleSprint(bool bToggle)
 	else
 	{
 		bIsSprinting = false;
-		if (!bIsAimming)
+		if (!(bIsAimming || bIsSupplying))
 			GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
 }
@@ -359,6 +362,20 @@ void APlayerCharacter::ToggleSlide(bool bToggle)
 		bIsSliding = false;
 		GetCharacterMovement()->MaxWalkSpeedCrouched = CrouchSpeed;
 		GetCharacterMovement()->bUseSeparateBrakingFriction = false;
+	}
+}
+
+void APlayerCharacter::ToggleSupply(bool bToggle)
+{	
+	if (bToggle)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
+		bIsSupplying = true;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+		bIsSupplying = false;
 	}
 }
 
@@ -481,7 +498,24 @@ void APlayerCharacter::FireAmmoTrace()
 
 void APlayerCharacter::StartReload()
 {
+	ToggleADS(false);
+	ToggleSprint(false);
+	StopFire();
+
+	bIsReloading = true;
+
+	UAnimMontage* TPPAnim = LoadObject<UAnimMontage>(NULL, TEXT("AnimMontage'/Game/Asset/Mannequin/UE4_Mannequin/Animation/Reload_Rifle_Ironsights_Montage.Reload_Rifle_Ironsights_Montage'"));
+	PlayAnimMontage(TPPAnim);
+	UAnimMontage* ReloadAnim = LoadObject<UAnimMontage>(NULL, TEXT("AnimMontage'/Game/Asset/ArmMesh/Animations/anim_Arm_Reload_Montage.anim_Arm_Reload_Montage'"));
+	ArmMesh->GetAnimInstance()->Montage_Play(ReloadAnim);
+
+	GetWorldTimerManager().SetTimer(ReloadDelayTimer, this, &APlayerCharacter::EndReload, ReloadAnim->GetPlayLength());
+}
+
+void APlayerCharacter::EndReload()
+{
 	auto Weapon = GetUsingWeapon();
+	
 	if (Weapon == nullptr)
 		return;
 	if (Weapon->WeaponInfo.Ammo == Weapon->WeaponInfo.ClipSize)
@@ -495,32 +529,13 @@ void APlayerCharacter::StartReload()
 		return;
 	}
 
-	ToggleADS(false);
-	ToggleSprint(false);
-	StopFire();
-
-	bIsReloading = true;
 	int32 loadAmmo = Weapon->WeaponInfo.ClipSize - Weapon->WeaponInfo.Ammo;
 	int32 expectedLoad = loadAmmo;
 	if (!Bag->UseItems(ammoItem, loadAmmo))
-	{
 		Weapon->WeaponInfo.Ammo += expectedLoad - loadAmmo;
-		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Dont have enough Ammo!"));
-	}
 	else
 		Weapon->WeaponInfo.Ammo = Weapon->WeaponInfo.ClipSize;
 
-	UAnimMontage* TPPAnim = LoadObject<UAnimMontage>(NULL, TEXT("AnimMontage'/Game/Asset/Mannequin/UE4_Mannequin/Animation/Reload_Rifle_Ironsights_Montage.Reload_Rifle_Ironsights_Montage'"));
-	PlayAnimMontage(TPPAnim);
-	UAnimMontage* ReloadAnim = LoadObject<UAnimMontage>(NULL, TEXT("AnimMontage'/Game/Asset/ArmMesh/Animations/anim_Arm_Reload_Montage.anim_Arm_Reload_Montage'"));
-	ArmMesh->GetAnimInstance()->Montage_Play(ReloadAnim);
-
-	GetWorldTimerManager().SetTimer(ReloadDelayTimer, this, &APlayerCharacter::EndReload, ReloadAnim->GetPlayLength());
-}
-
-void APlayerCharacter::EndReload()
-{
-	auto Weapon = GetUsingWeapon();
 	HUDAmmoDel.ExecuteIfBound(Weapon->WeaponInfo.Ammo, Bag->CountItemInBag(EItemType::AMMO));
 	bIsReloading = false;
 }
@@ -567,13 +582,47 @@ void APlayerCharacter::InteractTracedObj()
 {
 	if (TracedObj == nullptr)
 		return;
-	UClass* objClass = TracedObj->GetClass();
 
+	UClass* objClass = TracedObj->GetClass();
 	if (objClass->ImplementsInterface(UInteractableINT::StaticClass()))
 	{
 		auto ImpObj = Cast<IInteractableINT>(TracedObj);
 		ImpObj->InteractINTFunc_Implementation(this);
 	}
+}
+
+void APlayerCharacter::UsingSupplement(AItemBase* Item, int32 Num)
+{
+	auto supplementType = Item->ItemInfo.ItemType;
+	if (supplementType == EItemType::CELL || supplementType == EItemType::BATTERY)
+	{
+		if (Info->CurArmour == Info->MaxArmour)
+			return;
+	}
+	else if (supplementType == EItemType::AIDS || supplementType == EItemType::MEDKIT)
+	{
+		if (Info->CurHealth == Info->MaxHealth)
+			return;
+	}
+
+	ToggleSupply(true);
+
+	float usingTime = Item->ItemInfo.NeedTime;
+	FTimerDelegate CompleteSupplyDel;
+	CompleteSupplyDel.BindUFunction(this, "SupplyFinished", Item, Num);
+	GetWorldTimerManager().SetTimer(UseSupplementTimer, CompleteSupplyDel, usingTime, false);
+}
+
+void APlayerCharacter::SupplyFinished(AItemBase* Item, int32 Num)
+{
+	ToggleSupply(false);
+	Bag->UseItems(Bag->SearchInBag(Item->ItemInfo.ItemType), Num);
+}
+
+void APlayerCharacter::StopUsingSupplement()
+{
+	ToggleSupply(false);
+	GetWorldTimerManager().ClearTimer(UseSupplementTimer);
 }
 
 //////////////////////////////////////////

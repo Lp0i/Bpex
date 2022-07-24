@@ -27,3 +27,10 @@ void UUIBagSlot::SetSlotText(int32 num)
 	else
 		ItemNum->SetText(FText::FromString(""));
 }
+
+void UUIBagSlot::ClearSlotData()
+{
+	ItemRef = nullptr;
+	SetSlotText(0);
+	SetSlotImg(nullptr);
+}

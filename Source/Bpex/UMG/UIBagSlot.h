@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Bpex/Object/ItemBase.h"
 #include "UIBagSlot.generated.h"
 
 
@@ -19,10 +20,16 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 		class UTextBlock* ItemNum;
 
+	UPROPERTY(BlueprintReadWrite)
+		class AItemBase* ItemRef;
+
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetSlotImg(UTexture2D* img);
+		void SetSlotImg(UTexture2D* img);
 
 	UFUNCTION(BlueprintCallable)
-	void SetSlotText(int32 num);
+		void SetSlotText(int32 num);
+
+	UFUNCTION(BlueprintCallable)
+		void ClearSlotData();
 };

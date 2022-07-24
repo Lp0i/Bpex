@@ -188,26 +188,13 @@ AItemBase* AItemBase::DuplicateItem(FItemInfo& NewInfo, bool StatusToggle)
 	dupItem->SetHideStatus(StatusToggle);
 	return dupItem;
 }
-
-
-///////////////////////////////////////////////////
-// UseItem
 void AItemBase::UseItem()
-{
-	FTimerHandle Timer;
-	if (ItemInfo.NeedTime != 0.f)
-		GetWorldTimerManager().SetTimer(Timer, this, &AItemBase::ItemEffect, ItemInfo.NeedTime);
-	else
-		ItemEffect();
-}
-
-void AItemBase::ItemEffect()
 {
 	switch (ItemInfo.ItemType)
 	{
 	case EItemType::AIDS:
 	case EItemType::MEDKIT:
-		if(OwnerPlayer)
+		if (OwnerPlayer)
 			OwnerPlayer->GetInfoComp()->GetHealthSupply(ItemInfo.Supply);
 		break;
 

@@ -120,27 +120,18 @@ bool UPlayerBagComp::UseItems(AItemBase* Item, UPARAM(ref) int32& UseNum)
 	itemInfo.Num = 0;
 	Item->UseItem();
 	Bag.Remove(Item);
+	UIInventoryDel.Broadcast(Bag, MaxSize);
 
 	if (UseNum != 0)
 	{
 		AItemBase* item = SearchInBag(ItemType);
 		if (item != nullptr)
-		{
-			UIInventoryDel.Broadcast(Bag, MaxSize);
 			return UseItems(item, UseNum);
-		}
 		else
-		{
-			UIInventoryDel.Broadcast(Bag, MaxSize);
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Yellow, TEXT("Out of items"));
 			return false;
-		}
 	}
 	else
-	{
-		UIInventoryDel.Broadcast(Bag, MaxSize);
 		return true;
-	}
 }
 
 AItemBase* UPlayerBagComp::SearchInBag(EItemType ItemType)

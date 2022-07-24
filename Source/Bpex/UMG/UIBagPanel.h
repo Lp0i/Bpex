@@ -49,11 +49,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 		UUIBagSlot* Slot_16;
 
-
 public:
 	UFUNCTION(BlueprintCallable)
 		void UpdateBagUI(TArray<AItemBase*>& BagList, int32 BagSize);
 
-	UFUNCTION(BlueprintCallable)
-		void PrintProperty();
 };
