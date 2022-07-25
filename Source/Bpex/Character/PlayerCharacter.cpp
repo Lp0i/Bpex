@@ -387,11 +387,15 @@ void APlayerCharacter::ToggleSupply(bool bToggle)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = CrouchSpeed;
 		bIsSupplying = true;
+
+		SwitchWeapon(0);
 	}
 	else
 	{
 		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		bIsSupplying = false;
+
+		SwitchWeapon(GetWeaponComp()->UseWeaponIdx);
 	}
 }
 
