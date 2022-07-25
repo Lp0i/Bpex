@@ -294,8 +294,6 @@ void APlayerCharacter::ToggleSprint(bool bToggle)
 	{
 		if (!(bIsAimming || bIsReloading || GetCharacterMovement()->IsFalling()))
 		{
-			if (bIsCrouching)
-				ToggleCrouch(false);
 			bIsSprinting = true;
 			GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 		}
