@@ -24,10 +24,14 @@ void UUIInventory::SetupWidget()
 		playerBag->UIInventoryDel.AddUObject(this, &UUIInventory::UpdateBagPanel);
 	}
 
-	auto inputComp = UGameplayStatics::GetPlayerController(GetWorld(), 0)->InputComponent;
-	check(inputComp);
-	inputComp->BindAction("Inventory", IE_Pressed, this, &UUIInventory::InputShowOrHide);
-	//GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, TEXT("setup"));
+	auto InputComp = UGameplayStatics::GetPlayerController(GetWorld(), 0)->InputComponent;
+	check(InputComp);
+	FInputActionBinding InventoryBind("Inventory", IE_Pressed);
+	FInputActionUnifiedDelegate inputDel;
+	inputDel.BindDelegate(this, "InputShowOrHide");
+	InventoryBind.bExecuteWhenPaused = true;	//使得打开UI时能够接受关闭UI的输入
+	InventoryBind.ActionDelegate = inputDel;
+	InputComp->AddActionBinding(InventoryBind);
 }
 
 void UUIInventory::UpdateBagPanel(TArray<AItemBase*>& BagList, int32 BagSize)

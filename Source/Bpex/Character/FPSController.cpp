@@ -30,12 +30,11 @@ void AFPSController::SetupInputComponent()
 	InputComponent->BindAction<FToggleEventDel>("PrimaryFire", IE_Pressed, this, &AFPSController::ToggleFire, true);
 	InputComponent->BindAction<FToggleEventDel>("PrimaryFire", IE_Released, this, &AFPSController::ToggleFire, false);
 	InputComponent->BindAction("Reload", IE_Pressed, this, &AFPSController::Reload);
-
 }
 
 void AFPSController::BeginPlay()
 {
-	ControlPlayer = Cast<APlayerCharacter>(GetPawn());		
+	ControlPlayer = Cast<APlayerCharacter>(GetPawn());	
 }
 
 
@@ -135,4 +134,20 @@ void AFPSController::ToggleFire(bool bToggle)
 void AFPSController::Reload()
 {
 	ControlPlayer->StartReload();
+}
+
+
+/**补给时切换输入映射，开火变为停止补给*/
+void AFPSController::SupplyInputChange(bool bToggle)
+{
+	if (bToggle)
+	{
+		InputComponent->RemoveActionBinding("PrimaryFire", IE_Pressed);
+		InputComponent->BindAction("StopSupply", IE_Pressed, ControlPlayer, &APlayerCharacter::StopUsingSupplement);
+	}
+	else
+	{
+		InputComponent->RemoveActionBinding("StopSupply", IE_Pressed);
+		InputComponent->BindAction<FToggleEventDel>("PrimaryFire", IE_Pressed, this, &AFPSController::ToggleFire, true);
+	}
 }

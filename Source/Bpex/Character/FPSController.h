@@ -16,7 +16,7 @@ class BPEX_API AFPSController : public APlayerController
 
 	// BindAction所用代理 bool类型参数
 	DECLARE_DELEGATE_OneParam(FToggleEventDel, bool)
-	//
+	// 切换武器所用代理 int32类型参数
 	DECLARE_DELEGATE_OneParam(FSwitchWeaponDel, int32)
 
 
@@ -65,4 +65,7 @@ public:
 		void ToggleFire(bool bToggle);
 	UFUNCTION()
 		void Reload();
+
+	UFUNCTION()
+		void SupplyInputChange(bool bToggle);
 };

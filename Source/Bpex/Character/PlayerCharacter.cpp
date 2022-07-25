@@ -517,6 +517,18 @@ void APlayerCharacter::StartReload()
 	ToggleSprint(false);
 	StopFire();
 
+	auto Weapon = GetUsingWeapon();
+
+	if (Weapon == nullptr)
+		return;
+	if (Weapon->WeaponInfo.Ammo == Weapon->WeaponInfo.ClipSize)
+		return;
+	if (Bag->SearchInBag(EItemType::AMMO) == nullptr)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), Weapon->LowAmmoSound);
+		return;
+	}
+
 	bIsReloading = true;
 
 	UAnimMontage* TPPAnim = LoadObject<UAnimMontage>(NULL, TEXT("AnimMontage'/Game/Asset/Mannequin/UE4_Mannequin/Animation/Reload_Rifle_Ironsights_Montage.Reload_Rifle_Ironsights_Montage'"));
@@ -530,22 +542,10 @@ void APlayerCharacter::StartReload()
 void APlayerCharacter::EndReload()
 {
 	auto Weapon = GetUsingWeapon();
-	
-	if (Weapon == nullptr)
-		return;
-	if (Weapon->WeaponInfo.Ammo == Weapon->WeaponInfo.ClipSize)
-		return;
-
 	AItemBase* ammoItem = Bag->SearchInBag(EItemType::AMMO);
-	if (ammoItem == nullptr)
-	{
-		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, TEXT("Out of Ammo!"));
-		UGameplayStatics::PlaySound2D(GetWorld(), Weapon->LowAmmoSound);
-		return;
-	}
-
 	int32 loadAmmo = Weapon->WeaponInfo.ClipSize - Weapon->WeaponInfo.Ammo;
 	int32 expectedLoad = loadAmmo;
+
 	if (!Bag->UseItems(ammoItem, loadAmmo))
 		Weapon->WeaponInfo.Ammo += expectedLoad - loadAmmo;
 	else
@@ -623,25 +623,33 @@ void APlayerCharacter::UsingSupplement(AItemBase* Item, int32 Num)
 	SwitchWeapon(0);
 	ToggleSupply(true);
 
+	auto pc = Cast<AFPSController>(GetController());
+	pc->SupplyInputChange(true);
+
 	float usingTime = Item->ItemInfo.NeedTime;
 	FTimerDelegate CompleteSupplyDel;
 	CompleteSupplyDel.BindUFunction(this, "SupplyFinished", Item, Num);
 	GetWorldTimerManager().SetTimer(UseSupplementTimer, CompleteSupplyDel, usingTime, false);
 	
 	HUDSupplyProgressDel.ExecuteIfBound(usingTime, Item->ItemInfo.Icon, Item->ItemInfo.ItemName);
-	
 }
 
 void APlayerCharacter::SupplyFinished(AItemBase* Item, int32 Num)
 {
 	ToggleSupply(false);
 	Bag->UseItems(Bag->SearchInBag(Item->ItemInfo.ItemType), Num);
+
+	auto pc = Cast<AFPSController>(GetController());
+	pc->SupplyInputChange(false);
 }
 
 void APlayerCharacter::StopUsingSupplement()
 {
 	ToggleSupply(false);
 	GetWorldTimerManager().ClearTimer(UseSupplementTimer);
+
+	auto pc = Cast<AFPSController>(GetController());
+	pc->SupplyInputChange(false);
 
 	HUDSupplyProgressDel.ExecuteIfBound(0.f, nullptr, "");
 }
