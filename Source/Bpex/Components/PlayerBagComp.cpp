@@ -100,7 +100,6 @@ void UPlayerBagComp::DropItem(AItemBase* Item)
 	Item->SetActorLocation(GetOwner()->GetActorLocation());
 	Item->Mesh->AddImpulse(GetOwner()->GetActorRotation().Vector() * 400.f);
 	HUDItemDel.ExecuteIfBound(Item->ItemInfo.ItemType, CountItemInBag(Item->ItemInfo.ItemType));
-	//
 }
 
 bool UPlayerBagComp::UseItems(AItemBase* Item, UPARAM(ref) int32& UseNum)

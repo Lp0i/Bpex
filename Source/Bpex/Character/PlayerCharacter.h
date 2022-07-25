@@ -26,7 +26,7 @@ class BPEX_API APlayerCharacter : public ACharacter
 	DECLARE_DELEGATE_TwoParams(FHUDAmmoNumDel, int32, int32)
 	// HUD击中反馈
 	DECLARE_DELEGATE_OneParam(FHUDHitMarkDel, bool)
-
+	// 补给时UI信息
 	DECLARE_DELEGATE_ThreeParams(FHUDSupplyProgressDel, float, UTexture2D*, FString)
 
 public:
@@ -41,6 +41,8 @@ public:
 
 	// JumpCharge Timer 控制连续跳跃间隔
 	FTimerHandle JumpChargeTimer;
+	// SlideCharge Timer 控制连续滑铲间隔
+	FTimerHandle SlideChargeTimer;
 	// FireDelay Timer 控制开火速度
 	FTimerHandle FireDelayTimer;
 	// ReloadDelay Timer 换弹时间
@@ -95,6 +97,11 @@ public:	//Properties
 		float JumpChargeDelay = 1.2f;
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
 		bool bJumpCharged = true;
+
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
+		float SlideChargeDelay = 2.f;
+	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
+		bool bSlideCharged = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnyWhere, Category = "Moving Data")
 		float CrouchHeight = 44.f;
@@ -169,7 +176,8 @@ public: //Inline
 	
 	UFUNCTION(BlueprintCallable)
 		void SetJumpCharged() { bJumpCharged = true; }
-
+	UFUNCTION(BlueprintCallable)
+		void SetSlideCharged() { bSlideCharged = true; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -198,7 +206,6 @@ public:
 	virtual void Jump() override;
 	// 扩展：蹲伏
 	virtual void Crouch(bool bClientSimulation = false) override;
-	virtual void UnCrouch(bool bClientSimulation = false) override;
 	void UnCrouch_MyVersion();
 
 

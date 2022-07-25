@@ -13,20 +13,24 @@ void UHUDSupplyProgress::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 	if (bIsTicking)
 	{
 		float suppliedTime = GetGameInstance()->GetTimerManager().GetTimerElapsed(SupplyingTimer);
-		//GEngine->AddOnScreenDebugMessage(-1, 0.5, FColor::Blue, FString::SanitizeFloat(suppliedTime));
 		SetProgress(suppliedTime / SupplyTimeLength);
 	}
 }
 
 void UHUDSupplyProgress::SetupSupplyData(float supplyTime, UTexture2D* img, FString name)
 {
-	GetGameInstance()->GetTimerManager().SetTimer(SupplyingTimer, this, &UHUDSupplyProgress::SupplyFinished, supplyTime, false);
-	SupplyTimeLength = supplyTime;
-	bIsTicking = true;
-	SetSupplementImg(img);
-	SetSupplementName(name);
-	SetProgress(0.f);
-	SetRenderOpacity(1.f);
+	if (supplyTime <= 0)
+		SupplyFinished();
+	else
+	{
+		GetGameInstance()->GetTimerManager().SetTimer(SupplyingTimer, this, &UHUDSupplyProgress::SupplyFinished, supplyTime, false);
+		SupplyTimeLength = supplyTime;
+		SetSupplementImg(img);
+		SetSupplementName(name);
+		SetProgress(0.f);
+		SetRenderOpacity(1.f);
+		bIsTicking = true;
+	}
 }
 
 void UHUDSupplyProgress::SetSupplementImg(UTexture2D* img)

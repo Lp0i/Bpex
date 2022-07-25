@@ -188,16 +188,13 @@ void APlayerCharacter::Jump()
 	{
 		GetCharacterMovement()->JumpZVelocity = StandJumpVelocity;
 		bJumpCharged = false;
-		GetWorldTimerManager().SetTimer(JumpChargeTimer, this, &APlayerCharacter::SetJumpCharged, JumpChargeDelay, true);
+		GetWorldTimerManager().SetTimer(JumpChargeTimer, this, &APlayerCharacter::SetJumpCharged, JumpChargeDelay);
 	}
 	else
 	{
 		GetCharacterMovement()->JumpZVelocity = CrouchJumpVelocity;
-		if (GetWorldTimerManager().IsTimerActive(JumpChargeTimer))
-		{
-			GetWorldTimerManager().ClearTimer(JumpChargeTimer);
-			GetWorldTimerManager().SetTimer(JumpChargeTimer, this, &APlayerCharacter::SetJumpCharged, JumpChargeDelay, true);
-		}
+		GetWorldTimerManager().ClearTimer(JumpChargeTimer);
+		GetWorldTimerManager().SetTimer(JumpChargeTimer, this, &APlayerCharacter::SetJumpCharged, JumpChargeDelay);
 	}
 
 	Super::Jump();
@@ -227,7 +224,7 @@ void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 	{
 		if (GetCharacterMovement()->MovementMode == EMovementMode::MOVE_Walking)
 		{
-			if (bAttemptToCrouch)
+			if (bAttemptToCrouch)	// 在空中有蹲伏输入时，落地后触发滑铲
 			{
 				//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Purple, TEXT("Mode change trigger slide"));
 				ToggleCrouch(true);
@@ -239,7 +236,7 @@ void APlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 
 bool APlayerCharacter::CanJumpInternal_Implementation() const
 {
-	// 使得蹲伏时可以跳跃
+	// 使得蹲伏时可以跳跃，实现滑铲-跳
 	// 移除：bool bCanJump = !bIsCrouched; 
 	bool bCanJump = true;//GetCharacterMovement()->CanAttemptJump();
 
@@ -270,60 +267,27 @@ bool APlayerCharacter::CanJumpInternal_Implementation() const
 	return bCanJump;
 }
 
+
+
+////////////////////////////////////////////////////////////////
+// Crouch模块
+// 注意：在UE编辑器中设置 蹲伏半高 = 站立时胶囊体半高 来避免自带的Crouch方法直接改变胶囊体高度（突变）
+// 
+// 重写的Crouch方法
 void APlayerCharacter::Crouch(bool bClientSimulation)
 {
-	Super::Crouch(bClientSimulation);
-	//GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Purple, TEXT("Crouch"));
-
-	CrouchTimeline.Play();
+	Super::Crouch(bClientSimulation);	//CharacterMovement进入Crouch状态
+	CrouchTimeline.Play();	//使用Timeline平滑修改胶囊体高度
 }
-
-void APlayerCharacter::UnCrouch(bool bClientSimulation)
-{
-	//GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Purple, TEXT("UnCrouch !!!"));
-	Super::UnCrouch(bClientSimulation);
-}
+// 自定义的UnCrouch方法
 void APlayerCharacter::UnCrouch_MyVersion()
 {
-	CrouchTimeline.Reverse();
+	CrouchTimeline.Reverse();	//使用Timeline平滑修改胶囊体高度
 }
 
 
 ///////////////////////////////////////////////////////////
 // CustomEvent
-void APlayerCharacter::ToggleCrouch(bool bToggle)
-{
-	if (bToggle)
-	{
-		if (GetCharacterMovement()->IsFalling())
-		{
-			bAttemptToCrouch = true;
-			return;
-		}
-		bIsCrouching = true;
-		if (bIsSprinting && !(GetCharacterMovement()->IsFalling()) && !bAttemptToCrouch)
-			ToggleSlide(true);
-
-		Crouch();
-	}
-	else
-	{
-		ToggleSlide(false);
-		bIsCrouching = false;
-		bAttemptToCrouch = false;
-		UnCrouch_MyVersion();
-	}
-}
-void APlayerCharacter::SetCrouchAlpha(float value)
-{
-	CrouchAlpha = value;
-	float NewHeight = FMath::Lerp(OriginalHeight, CrouchHeight, value);
-	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHeight);
-	GetCharacterMovement()->CrouchedHalfHeight = NewHeight;
-	if (NewHeight == OriginalHeight)
-		UnCrouch();
-}
-
 void APlayerCharacter::ToggleSprint(bool bToggle)
 {
 	if (bToggle)
@@ -344,24 +308,78 @@ void APlayerCharacter::ToggleSprint(bool bToggle)
 	}
 }
 
+void APlayerCharacter::ToggleCrouch(bool bToggle)
+{
+	if (bToggle)
+	{
+		if (GetCharacterMovement()->IsFalling())
+		{
+			bAttemptToCrouch = true;	//在空中无法蹲伏，但接收蹲伏输入
+			return;
+		}
+		bIsCrouching = true;
+		if (bIsSprinting && !(GetCharacterMovement()->IsFalling()) && !bAttemptToCrouch)
+			ToggleSlide(true);		//普通奔跑状态下进行蹲伏即触发滑铲
+
+		Crouch();	//修改胶囊体高度
+	}
+	else
+	{
+		ToggleSlide(false);
+		bIsCrouching = false;
+		bAttemptToCrouch = false;
+		UnCrouch_MyVersion();	//改变胶囊体高度
+	}
+}
+void APlayerCharacter::SetCrouchAlpha(float value)
+{
+	// 平滑修改胶囊体高度
+	CrouchAlpha = value;
+	float NewHeight = FMath::Lerp(OriginalHeight, CrouchHeight, value);
+	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHeight);
+	GetCharacterMovement()->CrouchedHalfHeight = NewHeight;
+
+	if (NewHeight == OriginalHeight)	//回到起始值时解除CharacterMovement蹲伏状态
+		UnCrouch();
+}
+
 void APlayerCharacter::ToggleSlide(bool bToggle)
 {
 	if (bToggle)
 	{
 		bIsSliding = true;
-		//GetCharacterMovement()->MaxWalkSpeedCrouched = SlideSpeed;
-		GetCharacterMovement()->bUseSeparateBrakingFriction = true;
+		GetCharacterMovement()->bUseSeparateBrakingFriction = true; //使用另外的摩擦系数，使滑铲更顺滑
+
 		FVector velocity = GetVelocity();
-		float impluseScale = 1.5f;
-		if (velocity.Size2D() <= WalkSpeed && bAttemptToCrouch)
-			impluseScale = 2.f;
-		GetCharacterMovement()->AddImpulse(FVector(velocity.X * impluseScale, velocity.Y * impluseScale, 0.f), true);
+		
+		float impulseScale = 1.3f;	//滑铲瞬间提供的速度增量系数
+
+		if (bSlideCharged)	//滑铲缓冲完毕时
+		{
+			if ((velocity.Size2D() >= CrouchSpeed) && (velocity.Size2D() <= WalkSpeed) && bAttemptToCrouch) //跳起且速度达到一定范围时增大系数（类似Apex中的跳-滑铲）
+				impulseScale = 2.f;
+
+			//进入滑铲缓冲
+			bSlideCharged = false;
+			GetWorldTimerManager().SetTimer(SlideChargeTimer, this, &APlayerCharacter::SetSlideCharged, SlideChargeDelay);
+		}
+		else
+		{
+			//若还没缓冲完（两次滑铲间隔过短 <2秒)
+			impulseScale = 0.f;		//此时不加速
+
+			//重设缓冲
+			GetWorldTimerManager().ClearTimer(SlideChargeTimer);
+			GetWorldTimerManager().SetTimer(SlideChargeTimer, this, &APlayerCharacter::SetSlideCharged, SlideChargeDelay);
+		}
+
+		//根据速度增量系数施加力，方向为当前速度方向
+		GetCharacterMovement()->AddImpulse(FVector(velocity.X * impulseScale, velocity.Y * impulseScale, 0.f), true);
 	}
 	else
 	{
 		bIsSliding = false;
-		GetCharacterMovement()->MaxWalkSpeedCrouched = CrouchSpeed;
-		GetCharacterMovement()->bUseSeparateBrakingFriction = false;
+		GetCharacterMovement()->bUseSeparateBrakingFriction = false;	//离开滑铲状态时恢复原来的摩擦系数
 	}
 }
 
@@ -387,7 +405,6 @@ void APlayerCharacter::PrimaryFire()
 	auto Weapon = GetUsingWeapon();
 	if (!bUsingWeapon || !bTakeOutWeapon || Weapon == nullptr)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Blue, TEXT("Not using weapon!"));
 		return;
 	}
 	else if (Weapon->WeaponInfo.Ammo <= 0)
@@ -605,7 +622,7 @@ void APlayerCharacter::UsingSupplement(AItemBase* Item, int32 Num)
 			return;
 	}
 
-	SwitchWeapon(0.f);
+	SwitchWeapon(0);
 	ToggleSupply(true);
 
 	float usingTime = Item->ItemInfo.NeedTime;
@@ -614,6 +631,7 @@ void APlayerCharacter::UsingSupplement(AItemBase* Item, int32 Num)
 	GetWorldTimerManager().SetTimer(UseSupplementTimer, CompleteSupplyDel, usingTime, false);
 	
 	HUDSupplyProgressDel.ExecuteIfBound(usingTime, Item->ItemInfo.Icon, Item->ItemInfo.ItemName);
+	
 }
 
 void APlayerCharacter::SupplyFinished(AItemBase* Item, int32 Num)
@@ -626,6 +644,8 @@ void APlayerCharacter::StopUsingSupplement()
 {
 	ToggleSupply(false);
 	GetWorldTimerManager().ClearTimer(UseSupplementTimer);
+
+	HUDSupplyProgressDel.ExecuteIfBound(0.f, nullptr, "");
 }
 
 //////////////////////////////////////////

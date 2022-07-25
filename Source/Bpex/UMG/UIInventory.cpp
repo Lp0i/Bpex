@@ -55,13 +55,10 @@ void UUIInventory::InputShowOrHide()
 	if (!bIsShowed)
 	{
 		AddToViewport();
-		
 		bIsShowed = true;
-
 		pc->bShowMouseCursor = true;
-		FInputModeUIOnly InputModeUIAndGame;
+		FInputModeGameAndUI InputModeUIAndGame;
 		InputModeUIAndGame.SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways);
-		SetFocus();
 		pc->SetInputMode(InputModeUIAndGame);
 	}
 	else
