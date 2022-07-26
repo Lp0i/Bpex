@@ -523,7 +523,7 @@ void APlayerCharacter::StartReload()
 
 	auto Weapon = GetUsingWeapon();
 
-	if (Weapon == nullptr)
+	if (Weapon == nullptr || bIsReloading)
 		return;
 	if (Weapon->WeaponInfo.Ammo == Weapon->WeaponInfo.ClipSize)
 		return;
